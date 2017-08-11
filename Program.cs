@@ -12,35 +12,51 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Collections;
+using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace hwapp
 {
+    public static class MainHelper
+    {
+
+        public static double SinceThen(this DateTime before) => ((TimeSpan)(DateTime.Now - before)).TotalMilliseconds;
+
+    }
+
     class Program
     {
+
+
+
         static void Main(string[] args)
         {
-
-            var before = DateTime.Now;
+            DateTime before = DateTime.Now;
 
             Console.WriteLine($"Start");
 
-            var number = ImportFromXml();
-            var TimeSpan = ((TimeSpan)(DateTime.Now - before)).TotalMilliseconds;
+            var number = ImportFromXml(before);
 
-            Console.WriteLine($"\rTotal : {number} in {TimeSpan} ms   => {number * 1000 / TimeSpan} / second hiha");
+
+            Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} ms   => {number * 1000 / before.SinceThen()} / second hiha");
 
             //PrintItems();
         }
 
-        public static int ImportFromXml()
+        public static int ImportFromXml(DateTime before)
         {
             var XmlSerializer = new XmlSerializer(typeof(Mods), "http://www.loc.gov/mods/v3");
-            var UniqueAuthorIds = new HashSet<string>();
-            var UniqueProjectIds = new HashSet<string>();
-            var Projects = new List<Project>();
-            var Authors = new List<Author>();
-            var Publication_Author = new List<Publication_Author>();
-            var Publications = new List<Publication>();
+            var UniqueAuthorIds = new Concurrent​Dictionary<string, string>();
+            var UniqueProjectIds = new Concurrent​Dictionary<string, string>();
+            var number = 0;
+            var Projects = new ConcurrentQueue<Project>();
+            var Authors = new ConcurrentQueue<Author>();
+            var Publication_Author = new ConcurrentQueue<Publication_Author>();
+            var Publications = new ConcurrentQueue<Publication>();
+
 
             using (var BloggingContext = new BloggingContext())
             {
@@ -49,33 +65,42 @@ namespace hwapp
                 BloggingContext.Database.Migrate();
                 BloggingContext.ChangeTracker.AutoDetectChangesEnabled = false;
 
+
+
                 using (var StreamReader = new StreamReader(File.OpenRead("data.xml")))
                 {
                     StreamReader
                         .XmlReaderObserver<Mods>("mods")
-                        .Finally(() => BloggingContext.SaveChangesAsync())
+                        .Finally(() => BloggingContext.SaveChanges())
                         .Select(x => (Mods)XmlSerializer.Deserialize(x))
+                        .ObserveOn(Scheduler.Default)
                         .Subscribe(x =>
                         {
-                            Publications.Add(x.MapToPublication(""));
-                            Authors.AddRange(x.MapToAuthors().Where(y => UniqueAuthorIds.Add(y.Id)));
-                            Publication_Author.AddRange(x.MapToPublication_Author("", x.RecordInfo.RecordIdentifier));
-                            Projects.AddRange(x.MapToProject(x.RecordInfo.RecordIdentifier).Where(y => UniqueProjectIds.Add(y.Id)));
+                            ++number;
+                            Publications.Enqueue(x.MapToPublication(""));
+                            x.MapToAuthors().Where(y => UniqueAuthorIds.TryAdd(y.Id, "")).Where(y => !y.Id.Equals("/#//#//#/")).ToList().ForEach(y => Authors.Enqueue(y));
+                            x.MapToPublication_Author("", x.RecordInfo.RecordIdentifier).Where(y => !y.AuthorId.Equals("/#//#//#/")).ToList().ForEach(y => Publication_Author.Enqueue(y));
+                            x.MapToProject(x.RecordInfo.RecordIdentifier).Where(y => UniqueProjectIds.TryAdd(y.Id, "")).ToList().ForEach(y => Projects.Enqueue(y));
                         });
 
-                    var t = new List<PublicatieFTS>();
-                    t.AddRange(new List<PublicatieFTS>());
 
+
+                    Console.WriteLine($"{before.SinceThen()} ms   => {number * 1000 / before.SinceThen()} / seconds Parsing");
                     StreamReader.ReadToEnd();
 
-                    BloggingContext.AddRangeAsync(Publications);
-                    BloggingContext.SaveChangesAsync();
-                    BloggingContext.AddRangeAsync(Authors);
-                    BloggingContext.SaveChangesAsync();
-                    BloggingContext.AddRangeAsync(Publication_Author);
-                    BloggingContext.SaveChangesAsync();
+
+                    BloggingContext.AddRange(Publications);
+                    BloggingContext.SaveChanges();
+                    Console.WriteLine($"{before.SinceThen()} ms   => {number * 1000 / before.SinceThen()} / second Publications{Publications.Count}");
+                    BloggingContext.AddRange(Authors);
+                    BloggingContext.SaveChanges();
+                    Console.WriteLine($"{before.SinceThen()} ms   => {number * 1000 / before.SinceThen()} / second Authors{Authors.Count}");
+                    BloggingContext.AddRange(Publication_Author);
+                    BloggingContext.SaveChanges();
+                    Console.WriteLine($"{before.SinceThen()} ms   => {number * 1000 / before.SinceThen()} / second Publication_Author{Publication_Author.Count}");
                     BloggingContext.AddRangeAsync(Projects);
-                    BloggingContext.SaveChangesAsync();
+                    BloggingContext.SaveChanges();
+                    Console.WriteLine($"{before.SinceThen()} ms   => {number * 1000 / before.SinceThen()} / second Projects{Projects.Count}");
 
                 }
                 /*
