@@ -32,7 +32,7 @@ namespace hwapp
 
             Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} s   => {number  / before.SinceThen()} / second hiha");
 
-            PrintItems();
+           // PrintItems();
         }
 
         public static int ImportFromXml(DateTime before)

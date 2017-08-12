@@ -16,11 +16,10 @@ namespace Models
         [ForeignKey("PublicationId")]
         public virtual Publication Publication { get; set; }
         public int Sort { get; set; }
-        //      [Index]
-        public string Emplid { get; set; }
+        
         public string Url { get; set; }
         public string ToValue() => Author?.ToValue();
         public object[] GiveMeAllYourMoney()
-        => new object[5] { this.AuthorId, this.PublicationId, this.Sort, this.Emplid + "", this.Url };
+        => new object[4] { this.AuthorId, this.PublicationId, this.Sort, this.Url };
     }
 }

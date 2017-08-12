@@ -84,6 +84,7 @@ namespace Data
                 FamilyPrint = Name.MapToNamePart("family").PrintableLastName(),
                 Given = Name.MapToNamePart("given"),
                 Id = $"/#/{Name.MapToNamePart("family")}/#/{Name.ID?.Substring(3).IfNull()}/#/{Name.MapToNamePart("given")}",
+                Emplid = Name.ToEmplid()
             };
         public static string MapToId(this IEnumerable<Identifier> Identifiers) =>
             Identifiers
@@ -100,7 +101,7 @@ namespace Data
                 .GroupBy(x => new
                 {
                     family = x.NamePart.MapToPart("family"),
-                    emplid = x?.ID?.Substring(3).IfNull(),
+                    emplid = x.ToEmplid(),
                     given = x.NamePart.MapToPart("given"),
                 })
                 .Select((x, i) => new Publication_Author
@@ -108,11 +109,12 @@ namespace Data
                     AuthorId = $"/#/{x.Key.family}/#/{x.Key.emplid}/#/{x.Key.given}",
                     //Author = x.First().MapToAuthor(),
                     PublicationId = PublicationId,
-                    Emplid = x.Key.emplid,
                     Url = $"{UrlPrefix}{x.Key.emplid}",
                     Sort = i
                 });
 
+        public static string ToEmplid(this Name Name)
+        =>  Name?.ID?.Substring(3).IfNull();
         public static IEnumerable<Project> MapToProject(this Mods Mods, string PublicationId)
         => Mods.Name.SelectMany(x => x.MapToProject(PublicationId));
         public static IEnumerable<Project> MapToProject(this Name Name, string PublicationId)

@@ -16,6 +16,6 @@ namespace Models
         public List<Project> Projects { get; set; }
         public string ToValue() => $"{Id} {Title} {Url} {ExtraInfo} {/*Authors.ToValue()*/0}";
         public object[] GiveMeAllYourMoney()
-        => new object[6] { this.Id, this.Year + "", this.Title + "", this.Url + "", this.Type + "", this.ExtraInfo + "" };
+        => new object[6] { this.Id, this.ExtraInfo + "" , this.Title + "",  this.Type + "",this.Url + "", this.Year + ""};
     }
 }
