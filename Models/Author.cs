@@ -10,5 +10,7 @@ namespace Models
         public string Given { get; set; }
         public virtual List<Publication_Author> Publications { get; set; }
         public string ToValue() => $"{FamilyPrint} {Given}";
+        public object[] GiveMeAllYourMoney()
+        => new object[4] { this.Id, this.Family + "", this.FamilyPrint + "", this.Given + "" };
     }
 }

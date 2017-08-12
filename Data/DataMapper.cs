@@ -3,6 +3,9 @@ using Models;
 using Extentions;
 using System.Collections.Generic;
 using System.Linq;
+using hwapp.Data;
+using System.Collections.Concurrent;
+
 namespace Data
 {
     public static class DataMapper
@@ -53,8 +56,6 @@ namespace Data
         public static string MapToExtent(this Extent Extent) =>
             Extent?.Start?.IfNotNull($"p. {Extent.Start}")
             + Extent?.End?.IfNotNull($"-{Extent.End}");
-        public static string ToJoinedString(this IEnumerable<string> StringList, string Joiner = ",") =>
-            string.Join(Joiner, StringList);
         public static string MapToPart(this List<NamePart> NamePart, string type) =>
             NamePart
             .Where(y => y.Type != null && y.Type.Equals(type))
@@ -62,6 +63,15 @@ namespace Data
             .FirstOrDefault();
         public static string MapToNamePart(this Name Name, string type) =>
             Name.NamePart.MapToPart(type);
+
+        public static ExtractUnit MapToExtractUnit(this Mods x, Concurrent​Dictionary<string, string> UniqueAuthorIds, Concurrent​Dictionary<string, string> UniqueProjectIds)
+        => new ExtractUnit
+        {
+            Authors = x.MapToAuthors().Where(y => UniqueAuthorIds.TryAdd(y.Id, "")).Where(y => !y.Id.Equals("/#//#//#/")),
+            Publication = x.MapToPublication(""),
+            Publication_Authors = x.MapToPublication_Author("", x.RecordInfo.RecordIdentifier).Where(y => !y.AuthorId.Equals("/#//#//#/")),
+            Projects = x.MapToProject(x.RecordInfo.RecordIdentifier).Where(y => UniqueProjectIds.TryAdd(y.Id, ""))
+        };
 
         public static IEnumerable<Author> MapToAuthors(this Mods Mods) =>
             Mods.Name.MapToAuthors();
@@ -82,7 +92,7 @@ namespace Data
                 .FirstOrDefault();
         public static string MapToTitle(this TitleInfo TitleInfo) =>
             TitleInfo?.Title.IfNull();
-        
+
         public static IEnumerable<Publication_Author> MapToPublication_Author(this Mods Mods, string UrlPrefix, string PublicationId) =>
             Mods.Name.MapToPublication_Author(UrlPrefix, PublicationId);
         public static IEnumerable<Publication_Author> MapToPublication_Author(this IEnumerable<Name> Names, string UrlPrefix, string PublicationId) =>
@@ -103,10 +113,10 @@ namespace Data
                     Sort = i
                 });
 
-        public static IEnumerable<Project> MapToProject(this Mods Mods, string PublicationId) 
-        =>   Mods.Name.SelectMany(x => x.MapToProject(PublicationId)); 
-        public static IEnumerable<Project> MapToProject(this Name Name, string PublicationId) 
-        =>   Name.Affiliation.MapToProject(PublicationId); 
+        public static IEnumerable<Project> MapToProject(this Mods Mods, string PublicationId)
+        => Mods.Name.SelectMany(x => x.MapToProject(PublicationId));
+        public static IEnumerable<Project> MapToProject(this Name Name, string PublicationId)
+        => Name.Affiliation.MapToProject(PublicationId);
         public static IEnumerable<Project> MapToProject(this List<Affiliation> Affiliations, string PublicationId) =>
         Affiliations.Select(x => x.MapToProject(PublicationId));
 
@@ -175,10 +185,9 @@ namespace Data
                 Title = Mods.TitleInfo.MapToTitle(),
                 Year = Mods.OriginInfo.DateIssued.TryParse(),
                 //Authors = Mods.Name.MapToPublication_Author(UrlPrefix, Mods.RecordInfo.RecordIdentifier).ToList(),
-               // Projects = Mods.Name.MapToProjects(Mods.RecordInfo.RecordIdentifier).ToList(),
+                // Projects = Mods.Name.MapToProjects(Mods.RecordInfo.RecordIdentifier).ToList(),
                 Type = Mods.Extension.MapToType(),
                 ExtraInfo = Mods.MapToExtraInfo()
-
             };
         /*
                 public static IEnumerable<Author> MapToAuthors(this Publication x, HashSet<string> AuthorsUniqFilter)
