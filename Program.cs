@@ -17,7 +17,7 @@ namespace hwapp
     public static class MainHelper
     {
         public static double SinceThen(this DateTime before)
-        => ((TimeSpan)(DateTime.Now - before)).TotalMilliseconds;
+        => ((TimeSpan)(DateTime.Now - before)).TotalSeconds;
     }
     class Program
     {
@@ -30,7 +30,7 @@ namespace hwapp
 
             var number = ImportFromXml(before);
 
-            Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} ms   => {number * 1000 / before.SinceThen()} / second hiha");
+            Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} s   => {number  / before.SinceThen()} / second hiha");
 
             PrintItems();
         }
@@ -101,5 +101,4 @@ namespace hwapp
             }
         }
     }
-
 }
