@@ -61,7 +61,6 @@ namespace hwapp
                         StreamReader
                         .XmlReaderObserver<Mods>("mods")
                         .Select(x => (Mods)XmlSerializer.Deserialize(x))
-                        .ObserveOn(Scheduler.Default)
                         .Select(x => x.MapToExtractUnit(UniqueAuthorIds, UniqueProjectIds))
                         .ObserveOn(Scheduler.Default)
                         .Do(x =>
