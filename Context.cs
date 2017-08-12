@@ -9,6 +9,7 @@ namespace hwapp
     public class BloggingContext : DbContext
     {
         public DbSet<Publication> Publications { get; set; }
+        public DbSet<PublicatieFTS> PublicatieFTS { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite("Filename=CalorieTracker.db");

@@ -11,7 +11,7 @@ namespace Models
         public string PublicationId { get; set; }
         [ForeignKey("PublicationId")]
         public virtual Publication Publication { get; set; }
-        public string ToValue() => "";
+        public string ToValue() => $"UA{Id}";
         public object[] GiveMeAllYourMoney()
         => new object[2] { this.Id, this.PublicationId };
     }

@@ -107,14 +107,13 @@ namespace Data
                 .Select((x, i) => new Publication_Author
                 {
                     AuthorId = $"/#/{x.Key.family}/#/{x.Key.emplid}/#/{x.Key.given}",
-                    //Author = x.First().MapToAuthor(),
                     PublicationId = PublicationId,
                     Url = $"{UrlPrefix}{x.Key.emplid}",
                     Sort = i
                 });
 
         public static string ToEmplid(this Name Name)
-        =>  Name?.ID?.Substring(3).IfNull();
+        => Name?.ID?.Substring(3).IfNull();
         public static IEnumerable<Project> MapToProject(this Mods Mods, string PublicationId)
         => Mods.Name.SelectMany(x => x.MapToProject(PublicationId));
         public static IEnumerable<Project> MapToProject(this Name Name, string PublicationId)
@@ -186,18 +185,9 @@ namespace Data
                 Url = Mods.Identifier.MapToId(),
                 Title = Mods.TitleInfo.MapToTitle(),
                 Year = Mods.OriginInfo.DateIssued.TryParse(),
-                //Authors = Mods.Name.MapToPublication_Author(UrlPrefix, Mods.RecordInfo.RecordIdentifier).ToList(),
-                // Projects = Mods.Name.MapToProjects(Mods.RecordInfo.RecordIdentifier).ToList(),
                 Type = Mods.Extension.MapToType(),
                 ExtraInfo = Mods.MapToExtraInfo()
             };
-        /*
-                public static IEnumerable<Author> MapToAuthors(this Publication x, HashSet<string> AuthorsUniqFilter)
-                    => x
-                    .Authors
-                    .Select(z => z.Author)
-                    .Where(y => y != null && AuthorsUniqFilter.Add(y.Id));
-                    */
         public static PublicatieFTS MapToPublicatieFTS(this Publication x)
             => new PublicatieFTS
             {

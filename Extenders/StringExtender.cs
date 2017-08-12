@@ -5,13 +5,12 @@ namespace Extentions
 {
     public static class StringExtender
     {
-         public static int? TryParse(this string stringDate)
-         {
-              int date;
-            return int.TryParse(stringDate, out date) ? date : (int?)null;
-         }
-        
-        
+        public static int? TryParse(this string stringDate)
+        {
+            int NumericValue;
+            return int.TryParse(stringDate, out NumericValue) ? NumericValue : (int?)null;
+        }
+
         public static string PrintableLastName(this string LastName)
         {
             if (LastName == null)

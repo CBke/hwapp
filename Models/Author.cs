@@ -1,5 +1,7 @@
 using Intefaces;
 using System.Collections.Generic;
+using Data;
+
 namespace Models
 {
     public class Author : IValue
@@ -11,8 +13,8 @@ namespace Models
         //      [Index]
         public string Emplid { get; set; }
         public virtual List<Publication_Author> Publications { get; set; }
-        public string ToValue() => $"{FamilyPrint} {Given}";
+        public string ToValue() => $"{FamilyPrint} {Given} {Emplid}";
         public object[] GiveMeAllYourMoney()
-        => new object[5] { this.Id, this.Emplid + "", this.Family + "", this.FamilyPrint + "", this.Given + "" };
+        => new object[5] { this.Id, this.Emplid.IfNull(), this.Family.IfNull(), this.FamilyPrint.IfNull(), this.Given.IfNull() };
     }
 }

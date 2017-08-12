@@ -10,7 +10,6 @@ using Data;
 using Extentions;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using Newtonsoft.Json;
 
 namespace hwapp
 {
@@ -30,9 +29,11 @@ namespace hwapp
 
             var number = ImportFromXml(before);
 
-            Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} s   => {number  / before.SinceThen()} / second hiha");
+            Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} s   => {number / before.SinceThen()} / second hiha");
 
-           // PrintItems();
+            PrintItems();
+            Console.WriteLine($"{before.SinceThen()} s   => end select");
+
         }
 
         public static int ImportFromXml(DateTime before)
@@ -88,15 +89,27 @@ namespace hwapp
         {
             using (var BloggingContext = new BloggingContext())
             {
+                BloggingContext.Database.OpenConnection();
 
-                var JsonSerializerSettings = new JsonSerializerSettings { Formatting = Formatting.Indented };
+                using (var SQLiteConnection = BloggingContext.Database.GetDbConnection() as Microsoft.Data.Sqlite.SqliteConnection)
+                using (var Transaction = SQLiteConnection.BeginTransaction())
+                {
 
-                BloggingContext
-               .Publications
-               .ToList()
-               .Select(x => JsonConvert.SerializeObject(x))
-               .ToList()
-               .ForEach(z => Console.WriteLine(z));
+                    var PublicationsFTSCommand = BloggingContext.ToInsertSqliteCommand(typeof(PublicatieFTS), SQLiteConnection, Transaction);
+
+                    var Publications = BloggingContext
+                   .Publications
+                   .Include(x => x.Authors).ThenInclude(x => x.Author)
+                   .Include(xy => xy.Projects)
+                   .Select(x => x.MapToPublicatieFTS())
+                   .ToList();
+
+                    foreach (var Publication in Publications)
+                        PublicationsFTSCommand.Run(Publication);
+
+                    Transaction.Commit();
+
+                }
             }
         }
     }
