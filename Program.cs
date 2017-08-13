@@ -27,23 +27,23 @@ namespace hwapp
 
             Console.WriteLine($"Start");
 
-            var number = ImportFromXml(before);
+            var number = ImportFromXml("data.xml", "CalorieTracker.db");
 
             Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} s   => {number / before.SinceThen()} / second hiha");
 
-            PrintItems();
+            PrintItems("CalorieTracker.db");
             Console.WriteLine($"{before.SinceThen()} s   => end select");
 
         }
 
-        public static int ImportFromXml(DateTime before)
+        public static int ImportFromXml(string XMLFileName, string DBFileName)
         {
             var XmlSerializer = new XmlSerializer(typeof(Mods), "http://www.loc.gov/mods/v3");
             var UniqueAuthorIds = new Concurrent​Dictionary<string, string>();
             var UniqueProjectIds = new Concurrent​Dictionary<string, string>();
             var number = 0;
 
-            using (var BloggingContext = new BloggingContext())
+            using (var BloggingContext = new BloggingContext { FileName = DBFileName })
             {
                 BloggingContext.Database.EnsureCreated();
                 BloggingContext.Database.Migrate();
@@ -57,7 +57,7 @@ namespace hwapp
                     var Publication_AuthorCommand = BloggingContext.ToInsertSqliteCommand(typeof(Publication_Author), SQLiteConnection, Transaction);
                     var ProjectCommand = BloggingContext.ToInsertSqliteCommand(typeof(Project), SQLiteConnection, Transaction);
 
-                    using (var StreamReader = new StreamReader(File.OpenRead("data.xml")))
+                    using (var StreamReader = new StreamReader(File.OpenRead(XMLFileName)))
                     {
                         StreamReader
                         .XmlReaderObserver<Mods>("mods")
@@ -66,7 +66,7 @@ namespace hwapp
                         .ObserveOn(Scheduler.Default)
                         .Do(x =>
                         {
-                            ++number;
+                            number++;
                             PublicationCommand.Run(x.Publication);
                             AuthorCommand.Run(x.Authors);
                             Publication_AuthorCommand.Run(x.Publication_Authors);
@@ -74,7 +74,7 @@ namespace hwapp
                         })
                         .ToTask()
                         .Wait();
-                        
+
                         Transaction.Commit();
 
                         return number;
@@ -83,30 +83,28 @@ namespace hwapp
             }
         }
 
-        public static void PrintItems()
+        public static void PrintItems(string DBFileName)
         {
-            using (var BloggingContext = new BloggingContext())
+            using (var BloggingContext = new BloggingContext { FileName = DBFileName })
             {
                 BloggingContext.Database.OpenConnection();
 
                 using (var SQLiteConnection = BloggingContext.Database.GetDbConnection() as Microsoft.Data.Sqlite.SqliteConnection)
                 using (var Transaction = SQLiteConnection.BeginTransaction())
                 {
-
-                    var PublicationsFTSCommand = BloggingContext.ToInsertSqliteCommand(typeof(PublicatieFTS), SQLiteConnection, Transaction);
-
                     var Publications = BloggingContext
                    .Publications
-                   .Include(x => x.Authors).ThenInclude(x => x.Author)
+                   .Include(x => x.Authors)
+                   .ThenInclude(x => x.Author)
                    .Include(xy => xy.Projects)
                    .Select(x => x.MapToPublicatieFTS())
                    .ToList();
 
-                    foreach (var Publication in Publications)
-                        PublicationsFTSCommand.Run(Publication);
+                    BloggingContext
+                    .ToInsertSqliteCommand(typeof(PublicatieFTS), SQLiteConnection, Transaction)
+                    .Run(Publications);
 
                     Transaction.Commit();
-
                 }
             }
         }
