@@ -33,5 +33,10 @@ namespace Extentions
 
             SqliteCommand.ExecuteNonQueryAsync();
         }
+        public static void Run(this SqliteCommand SqliteCommand, IEnumerable<IValue> IValues)
+        {
+            foreach (var IValue in IValues)
+               SqliteCommand.Run(IValue);
+        }
     }
 }

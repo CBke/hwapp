@@ -68,15 +68,13 @@ namespace hwapp
                         {
                             ++number;
                             PublicationCommand.Run(x.Publication);
-                            foreach (var Author in x.Authors)
-                                AuthorCommand.Run(Author);
-                            foreach (var Publication_Author in x.Publication_Authors)
-                                Publication_AuthorCommand.Run(Publication_Author);
-                            foreach (var Project in x.Projects)
-                                ProjectCommand.Run(Project);
+                            AuthorCommand.Run(x.Authors);
+                            Publication_AuthorCommand.Run(x.Publication_Authors);
+                            ProjectCommand.Run(x.Projects);
                         })
                         .ToTask()
                         .Wait();
+                        
                         Transaction.Commit();
 
                         return number;
