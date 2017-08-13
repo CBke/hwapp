@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Models;
 
-namespace hwapp.Data
+namespace Data
 {
     public class ExtractUnit
     {

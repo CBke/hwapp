@@ -10,7 +10,7 @@ namespace Intefaces
     }
     public static class IValueExtender
     {
-        public static string ToValue(this IEnumerable<IValue> Values) =>
-           Values.Select(x => x.ToValue()).ToJoinedString(" ");
+        public static string ToValue(this IEnumerable<IValue> Values)
+        => Values.Select(x => x.ToValue()).ToJoinedString(" ");
     }
 }

@@ -62,7 +62,7 @@ namespace hwapp
                         StreamReader
                         .XmlReaderObserver<Mods>("mods")
                         .Select(x => (Mods)XmlSerializer.Deserialize(x))
-                        .Select(x => x.MapToExtractUnit(UniqueAuthorIds, UniqueProjectIds))
+                        .Select(x => x.ToExtractUnit(UniqueAuthorIds, UniqueProjectIds))
                         .ObserveOn(Scheduler.Default)
                         .Do(x =>
                         {
@@ -97,7 +97,7 @@ namespace hwapp
                    .Include(x => x.Authors)
                    .ThenInclude(x => x.Author)
                    .Include(xy => xy.Projects)
-                   .Select(x => x.MapToPublicatieFTS())
+                   .Select(x => x.ToPublicatieFTS())
                    .ToList();
 
                     BloggingContext

@@ -3,7 +3,6 @@ using Models;
 using Extentions;
 using System.Collections.Generic;
 using System.Linq;
-using hwapp.Data;
 using System.Collections.Concurrent;
 
 namespace Data
@@ -47,153 +46,147 @@ namespace Data
             {"PT142","1297"},
             {"PT143","1298"}
         };
-        public static string IfNull(this string String, string NullValue = "") =>
-            string.IsNullOrEmpty(String) ? NullValue : String;
-        public static string IfNotNull(this string String, string NotNullValue) =>
-            !string.IsNullOrEmpty(String) ? NotNullValue : String;
-        public static string IfNotNull(this object Obj, string NotNullValue) =>
-          Obj != null ? NotNullValue : null;
-        public static string MapToExtent(this Extent Extent) =>
-            Extent?.Start?.IfNotNull($"p. {Extent.Start}")
-            + Extent?.End?.IfNotNull($"-{Extent.End}");
-        public static string MapToPart(this List<NamePart> NamePart, string type) =>
-            NamePart
+        public static string IfNull(this string String, string NullValue = "")
+        => string.IsNullOrEmpty(String) ? NullValue : String;
+        public static string IfNotNull(this string String, string NotNullValue)
+        => !string.IsNullOrEmpty(String) ? NotNullValue : String;
+        public static string IfNotNull(this object Obj, string NotNullValue)
+        => Obj != null ? NotNullValue : null;
+        public static string ToExtent(this Extent Extent)
+        => Extent?.Start?.IfNotNull($"p. {Extent.Start}") + Extent?.End?.IfNotNull($"-{Extent.End}");
+        public static string ToPart(this List<NamePart> NamePart, string type)
+        => NamePart
             .Where(y => y.Type != null && y.Type.Equals(type))
             .Select(y => y.Text)
             .FirstOrDefault();
-        public static string MapToNamePart(this Name Name, string type) =>
-            Name.NamePart.MapToPart(type);
-
-        public static ExtractUnit MapToExtractUnit(this Mods x, Concurrent​Dictionary<string, string> UniqueAuthorIds, Concurrent​Dictionary<string, string> UniqueProjectIds)
+        public static string ToNamePart(this Name Name, string type)
+        => Name.NamePart.ToPart(type);
+        public static ExtractUnit ToExtractUnit(this Mods x, Concurrent​Dictionary<string, string> UniqueAuthorIds, Concurrent​Dictionary<string, string> UniqueProjectIds)
         => new ExtractUnit
         {
-            Authors = x.MapToAuthors().Where(y => UniqueAuthorIds.TryAdd(y.Id, "")).Where(y => !y.Id.Equals("/#//#//#/")),
-            Publication = x.MapToPublication(""),
-            Publication_Authors = x.MapToPublication_Author("", x.RecordInfo.RecordIdentifier).Where(y => !y.AuthorId.Equals("/#//#//#/")),
-            Projects = x.MapToProject(x.RecordInfo.RecordIdentifier).Where(y => UniqueProjectIds.TryAdd(y.Id, ""))
+            Authors = x.ToAuthors().Where(y => UniqueAuthorIds.TryAdd(y.Id, "")).Where(y => !y.Id.Equals("/#//#//#/")),
+            Publication = x.ToPublication(""),
+            Publication_Authors = x.ToPublication_Author("", x.RecordInfo.RecordIdentifier).Where(y => !y.AuthorId.Equals("/#//#//#/")),
+            Projects = x.ToProject(x.RecordInfo.RecordIdentifier).Where(y => UniqueProjectIds.TryAdd(y.Id, ""))
         };
-
-        public static IEnumerable<Author> MapToAuthors(this Mods Mods) =>
-            Mods.Name.MapToAuthors();
-        public static IEnumerable<Author> MapToAuthors(this IEnumerable<Name> Names) =>
-            Names.Select(x => x.MapToAuthor());
-        public static Author MapToAuthor(this Name Name) =>
-            new Author
-            {
-                Family = Name.MapToNamePart("family"),
-                FamilyPrint = Name.MapToNamePart("family").PrintableLastName(),
-                Given = Name.MapToNamePart("given"),
-                Id = $"/#/{Name.MapToNamePart("family")}/#/{Name.ID?.Substring(3).IfNull()}/#/{Name.MapToNamePart("given")}",
-                Emplid = Name.ToEmplid()
-            };
-        public static string MapToId(this IEnumerable<Identifier> Identifiers) =>
-            Identifiers
-                .Where(y => y.Type.Equals("hdl"))
-                .Select(x => x.Text)
-                .FirstOrDefault();
-        public static string MapToTitle(this TitleInfo TitleInfo) =>
+        public static IEnumerable<Author> ToAuthors(this Mods Mods)
+        => Mods.Name.ToAuthors();
+        public static IEnumerable<Author> ToAuthors(this IEnumerable<Name> Names)
+        => Names.Select(x => x.ToAuthor());
+        public static Author ToAuthor(this Name Name)
+        => new Author
+        {
+            Family = Name.ToNamePart("family"),
+            FamilyPrint = Name.ToNamePart("family").PrintableLastName(),
+            Given = Name.ToNamePart("given"),
+            Id = $"/#/{Name.ToNamePart("family")}/#/{Name.ID?.Substring(3).IfNull()}/#/{Name.ToNamePart("given")}",
+            Emplid = Name.ToEmplid()
+        };
+        public static string ToId(this IEnumerable<Identifier> Identifiers)
+        => Identifiers
+            .Where(y => y.Type.Equals("hdl"))
+            .Select(x => x.Text)
+            .FirstOrDefault();
+        public static string ToTitle(this TitleInfo TitleInfo) =>
             TitleInfo?.Title.IfNull();
 
-        public static IEnumerable<Publication_Author> MapToPublication_Author(this Mods Mods, string UrlPrefix, string PublicationId) =>
-            Mods.Name.MapToPublication_Author(UrlPrefix, PublicationId);
-        public static IEnumerable<Publication_Author> MapToPublication_Author(this IEnumerable<Name> Names, string UrlPrefix, string PublicationId) =>
-            Names?
-                .GroupBy(x => new
-                {
-                    family = x.NamePart.MapToPart("family"),
-                    emplid = x.ToEmplid(),
-                    given = x.NamePart.MapToPart("given"),
-                })
-                .Select((x, i) => new Publication_Author
-                {
-                    AuthorId = $"/#/{x.Key.family}/#/{x.Key.emplid}/#/{x.Key.given}",
-                    PublicationId = PublicationId,
-                    Url = $"{UrlPrefix}{x.Key.emplid}",
-                    Sort = i
-                });
+        public static IEnumerable<Publication_Author> ToPublication_Author(this Mods Mods, string UrlPrefix, string PublicationId)
+        => Mods.Name.ToPublication_Author(UrlPrefix, PublicationId);
+        public static IEnumerable<Publication_Author> ToPublication_Author(this IEnumerable<Name> Names, string UrlPrefix, string PublicationId)
+        => Names?
+        .GroupBy(x => new
+        {
+            family = x.NamePart.ToPart("family"),
+            emplid = x.ToEmplid(),
+            given = x.NamePart.ToPart("given"),
+        })
+        .Select((x, i) => new Publication_Author
+        {
+            AuthorId = $"/#/{x.Key.family}/#/{x.Key.emplid}/#/{x.Key.given}",
+            PublicationId = PublicationId,
+            Url = $"{UrlPrefix}{x.Key.emplid}",
+            Sort = i
+        });
 
         public static string ToEmplid(this Name Name)
         => Name?.ID?.Substring(3).IfNull();
-        public static IEnumerable<Project> MapToProject(this Mods Mods, string PublicationId)
-        => Mods.Name.SelectMany(x => x.MapToProject(PublicationId));
-        public static IEnumerable<Project> MapToProject(this Name Name, string PublicationId)
-        => Name.Affiliation.MapToProject(PublicationId);
-        public static IEnumerable<Project> MapToProject(this List<Affiliation> Affiliations, string PublicationId) =>
-        Affiliations.Select(x => x.MapToProject(PublicationId));
+        public static IEnumerable<Project> ToProject(this Mods Mods, string PublicationId)
+        => Mods.Name.SelectMany(x => x.ToProject(PublicationId));
+        public static IEnumerable<Project> ToProject(this Name Name, string PublicationId)
+        => Name.Affiliation.ToProject(PublicationId);
+        public static IEnumerable<Project> ToProject(this List<Affiliation> Affiliations, string PublicationId) =>
+        Affiliations.Select(x => x.ToProject(PublicationId));
 
-        public static Project MapToProject(this Affiliation Affiliation, string PublicationId)
+        public static Project ToProject(this Affiliation Affiliation, string PublicationId)
         => new Project
         {
             Id = Affiliation.Text.Substring(3),
             PublicationId = PublicationId
         };
 
-        public static string MapToType(this Extension Extension) =>
-            IdToType
+        public static string ToType(this Extension Extension)
+        => IdToType
             .Where(x => x.Key.Equals(Extension.Pubtype.Where(y => y.Src.Equals("ua")).Select(y => y.Text).FirstOrDefault()))
             .Select(x => x.Value)
             .FirstOrDefault();
-        public static string MapToTitleInfo(this TitleInfo TitleInfo) =>
-            TitleInfo?
+        public static string ToTitleInfo(this TitleInfo TitleInfo)
+        => TitleInfo?
             .Title
             .IfNull();
-        public static string MapToIdentifier(this Identifier Identifier) =>
-            Identifier?
+        public static string ToIdentifier(this Identifier Identifier)
+         => Identifier?
             .Text?
             .IfNotNull($" - ISSN {Identifier.Text}");
-        public static string MapToDetail(this IEnumerable<Detail> Detail) =>
-            Detail?
+        public static string ToDetail(this IEnumerable<Detail> Detail)
+        => Detail?
             .OrderByDescending(x => x.Type)
             .Select(x => x.Number)
             .ToJoinedString(":")
             .IfNull();
-        public static string MapToDate(this string Date) =>
-            Date?.IfNotNull($" ({Date}) ");
-        public static string MapToPart(this Part Part) =>
-            Part?.IfNotNull($"-{Part.Detail.MapToDetail()}{Part.Date.MapToDate()}{Part.Extent.MapToExtent()}");
-        public static string MapToRelatedItem(this RelatedItem RelatedItem) =>
-            RelatedItem?
-            .IfNotNull($"{RelatedItem?.TitleInfo.MapToTitleInfo()}{RelatedItem?.Identifier.MapToIdentifier()}{RelatedItem?.Part.MapToPart()}")
+        public static string ToDate(this string Date)
+        => Date?.IfNotNull($" ({Date}) ");
+        public static string ToPart(this Part Part)
+        => Part?.IfNotNull($"-{Part.Detail.ToDetail()}{Part.Date.ToDate()}{Part.Extent.ToExtent()}");
+        public static string ToRelatedItem(this RelatedItem RelatedItem)
+        => RelatedItem?
+            .IfNotNull($"{RelatedItem?.TitleInfo.ToTitleInfo()}{RelatedItem?.Identifier.ToIdentifier()}{RelatedItem?.Part.ToPart()}")
             .IfNull();
-        public static string MapToRelatedItem(this IEnumerable<RelatedItem> RelatedItems) =>
-            RelatedItems
+        public static string ToRelatedItem(this IEnumerable<RelatedItem> RelatedItems)
+        => RelatedItems
             .FirstOrDefault(x => x.Type.Equals("host"))
-            .MapToRelatedItem();
-        public static string MapToPlace(this Place Place) =>
-            Place
+            .ToRelatedItem();
+        public static string ToPlace(this Place Place)
+        => Place
             .IfNotNull(Place?.PlaceTerm)
             .IfNull();
-        public static string MapToOriginInfo(this OriginInfo x) =>
-            new[] { x.Place.MapToPlace(), x.Publisher, x.DateIssued }
+        public static string ToOriginInfo(this OriginInfo x)
+        => new[] { x.Place.ToPlace(), x.Publisher, x.DateIssued }
             .Where(y => !string.IsNullOrEmpty(y))
             .ToJoinedString(", ")
             .IfNull();
-        public static string MapToPhysicalDescription(this PhysicalDescription x) =>
-            x?.Extent.IfNull();
-        public static string MapToExtraInfo(this Mods Mods) =>
-            Mods
+        public static string ToPhysicalDescription(this PhysicalDescription x)
+        => x?.Extent.IfNull();
+        public static string ToExtraInfo(this Mods Mods)
+        => Mods
             .RelatedItem
-            .MapToRelatedItem()
-            .IfNull($"{Mods.OriginInfo.MapToOriginInfo()},{Mods.PhysicalDescription.MapToPhysicalDescription()}");
-        public static IEnumerable<Publication> MapToPublications(this IEnumerable<Mods> Mods, string UrlPrefix) =>
-        Mods.Select(x => x.MapToPublication(UrlPrefix));
-
-        public static Publication MapToPublication(this Mods Mods, string UrlPrefix) =>
-            new Publication
-            {
-                Id = Mods.RecordInfo.RecordIdentifier,
-                Url = Mods.Identifier.MapToId(),
-                Title = Mods.TitleInfo.MapToTitle(),
-                Year = Mods.OriginInfo.DateIssued.TryParse(),
-                Type = Mods.Extension.MapToType(),
-                ExtraInfo = Mods.MapToExtraInfo()
-            };
-        public static PublicatieFTS MapToPublicatieFTS(this Publication x)
-            => new PublicatieFTS
-            {
-                Id = x.Id,
-                Json = x.ToValue(),
-                Year = x.Year
-            };
+            .ToRelatedItem()
+            .IfNull($"{Mods.OriginInfo.ToOriginInfo()},{Mods.PhysicalDescription.ToPhysicalDescription()}");
+        public static Publication ToPublication(this Mods Mods, string UrlPrefix)
+        => new Publication
+        {
+            Id = Mods.RecordInfo.RecordIdentifier,
+            Url = Mods.Identifier.ToId(),
+            Title = Mods.TitleInfo.ToTitle(),
+            Year = Mods.OriginInfo.DateIssued.TryParse(),
+            Type = Mods.Extension.ToType(),
+            ExtraInfo = Mods.ToExtraInfo()
+        };
+        public static PublicatieFTS ToPublicatieFTS(this Publication x)
+        => new PublicatieFTS
+        {
+            Id = x.Id,
+            Json = x.ToValue(),
+            Year = x.Year
+        };
     }
 }
