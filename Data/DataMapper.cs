@@ -4,6 +4,7 @@ using Extentions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Concurrent;
+using System;
 
 namespace Data
 {
@@ -59,6 +60,10 @@ namespace Data
             .Where(y => y.Type != null && y.Type.Equals(type))
             .Select(y => y.Text)
             .FirstOrDefault();
+        public static string ToPrintableLastName(this string LastName)
+        => LastName?.ToPrintableLastName(LastName.IndexOf(", ", StringComparison.Ordinal));
+        public static string ToPrintableLastName(this string LastName, int index)
+        => (index <= 0) ? LastName : $"{LastName.Substring(index + 2)} { LastName.Substring(0, index)}";
         public static string ToNamePart(this Name Name, string type)
         => Name.NamePart.ToPart(type);
         public static ExtractUnit ToExtractUnit(this Mods x, Concurrent​Dictionary<string, string> UniqueAuthorIds, Concurrent​Dictionary<string, string> UniqueProjectIds)
@@ -77,7 +82,7 @@ namespace Data
         => new Author
         {
             Family = Name.ToNamePart("family"),
-            FamilyPrint = Name.ToNamePart("family").PrintableLastName(),
+            FamilyPrint = Name.ToNamePart("family").ToPrintableLastName().IfNull(),
             Given = Name.ToNamePart("given"),
             Id = $"/#/{Name.ToNamePart("family")}/#/{Name.ID?.Substring(3).IfNull()}/#/{Name.ToNamePart("given")}",
             Emplid = Name.ToEmplid()
