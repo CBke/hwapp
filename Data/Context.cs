@@ -4,7 +4,7 @@ using Models;
 using Microsoft.Data.Sqlite;
 using System;
 
-namespace hwapp
+namespace Data
 {
     public class BloggingContext : DbContext
     {

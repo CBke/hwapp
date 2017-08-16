@@ -1,4 +1,3 @@
-using hwapp;
 using Models;
 using Extentions;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ namespace Data
 {
     public static class DataMapper
     {
-        public static Dictionary<string, string> IdToType = new Dictionary<string, string>()
+        public static Dictionary<string, string> IdToType = new Dictionary<string, string>
         {
             //{"PT1",  "Tijdschriftartikel"},
             {"PT2",  "1231"},
@@ -47,12 +46,7 @@ namespace Data
             {"PT142","1297"},
             {"PT143","1298"}
         };
-        public static string IfNull(this string String, string NullValue = "")
-        => string.IsNullOrEmpty(String) ? NullValue : String;
-        public static string IfNotNull(this string String, string NotNullValue)
-        => !string.IsNullOrEmpty(String) ? NotNullValue : String;
-        public static string IfNotNull(this object Obj, string NotNullValue)
-        => Obj != null ? NotNullValue : null;
+      
         public static string ToExtent(this Extent Extent)
         => Extent?.Start?.IfNotNull($"p. {Extent.Start}") + Extent?.End?.IfNotNull($"-{Extent.End}");
         public static string ToPart(this List<NamePart> NamePart, string type)
@@ -94,7 +88,6 @@ namespace Data
             .FirstOrDefault();
         public static string ToTitle(this TitleInfo TitleInfo) =>
             TitleInfo?.Title.IfNull();
-
         public static IEnumerable<Publication_Author> ToPublication_Author(this Mods Mods, string UrlPrefix, string PublicationId)
         => Mods.Name.ToPublication_Author(UrlPrefix, PublicationId);
         public static IEnumerable<Publication_Author> ToPublication_Author(this IEnumerable<Name> Names, string UrlPrefix, string PublicationId)
@@ -112,7 +105,6 @@ namespace Data
             Url = $"{UrlPrefix}{x.Key.emplid}",
             Sort = i
         });
-
         public static string ToEmplid(this Name Name)
         => Name?.ID?.Substring(3).IfNull();
         public static IEnumerable<Project> ToProject(this Mods Mods, string PublicationId)
@@ -121,14 +113,12 @@ namespace Data
         => Name.Affiliation.ToProject(PublicationId);
         public static IEnumerable<Project> ToProject(this List<Affiliation> Affiliations, string PublicationId) =>
         Affiliations.Select(x => x.ToProject(PublicationId));
-
         public static Project ToProject(this Affiliation Affiliation, string PublicationId)
         => new Project
         {
             Id = Affiliation.Text.Substring(3),
             PublicationId = PublicationId
         };
-
         public static string ToType(this Extension Extension)
         => IdToType
             .Where(x => x.Key.Equals(Extension.Pubtype.Where(y => y.Src.Equals("ua")).Select(y => y.Text).FirstOrDefault()))

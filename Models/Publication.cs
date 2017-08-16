@@ -1,9 +1,6 @@
 ﻿using Intefaces;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Extentions;
-using Data;
 
 namespace Models
 {
@@ -17,7 +14,6 @@ namespace Models
         public string ExtraInfo { get; set; }
         public List<Publication_Author> Authors { get; set; }
         public List<Project> Projects { get; set; } 
-        
         public string ToValue() => $"{Id} {Title} {Url} {ExtraInfo}  {Authors?.ToValue()}  ";
         public object[] GiveMeAllYourMoney()
         => new object[6] { this.Id, this.ExtraInfo.IfNull(), this.Title.IfNull(),  this.Type.IfNull(), this.Url.IfNull(), this.Year};

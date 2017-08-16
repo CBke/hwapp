@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Intefaces;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,19 +23,6 @@ namespace Extentions
             SqliteCommand.Parameters.AddRange(Fields.Select(x => new SqliteParameter { ParameterName = x }));
 
             return SqliteCommand;
-        }
-        public static void Run(this SqliteCommand SqliteCommand, IValue IValue)
-        {
-            int i = 0;
-            foreach (var element in IValue.GiveMeAllYourMoney())
-                SqliteCommand.Parameters[i++].Value = element;
-
-            SqliteCommand.ExecuteNonQueryAsync();
-        }
-        public static void Run(this SqliteCommand SqliteCommand, IEnumerable<IValue> IValues)
-        {
-            foreach (var IValue in IValues)
-                SqliteCommand.Run(IValue);
         }
     }
 }
