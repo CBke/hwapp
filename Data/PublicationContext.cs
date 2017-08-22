@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using Models;
-using Microsoft.Data.Sqlite;
-using System;
 
 namespace Data
 {

@@ -45,8 +45,8 @@ namespace Data
             {"PT141","1248"},
             {"PT142","1297"},
             {"PT143","1298"}
-        };
-      
+        }; 
+
         public static string ToExtent(this Extent Extent)
         => Extent?.Start?.IfNotNull($"p. {Extent.Start}") + Extent?.End?.IfNotNull($"-{Extent.End}");
         public static string ToPart(this List<NamePart> NamePart, string type)
@@ -86,8 +86,8 @@ namespace Data
             .Where(y => y.Type.Equals("hdl"))
             .Select(x => x.Text)
             .FirstOrDefault();
-        public static string ToTitle(this TitleInfo TitleInfo) =>
-            TitleInfo?.Title.IfNull();
+        public static string ToTitle(this TitleInfo TitleInfo)
+        => TitleInfo?.Title.IfNull();
         public static IEnumerable<Publication_Author> ToPublication_Author(this Mods Mods, string UrlPrefix, string PublicationId)
         => Mods.Name.ToPublication_Author(UrlPrefix, PublicationId);
         public static IEnumerable<Publication_Author> ToPublication_Author(this IEnumerable<Name> Names, string UrlPrefix, string PublicationId)
