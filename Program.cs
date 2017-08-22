@@ -13,17 +13,17 @@ namespace hwapp
 
             Console.WriteLine($"Start");
 
-            using (var BloggingContext = new BloggingContext { FileName = "CalorieTracker.db" })
+            using (var PublicationContext = new PublicationContext { FileName = "PublicationContext.db" })
             {
-                BloggingContext.Database.EnsureCreated();
-                BloggingContext.Database.Migrate();
-                BloggingContext.Database.OpenConnection();
+                PublicationContext.Database.EnsureCreated();
+                PublicationContext.Database.Migrate();
+                PublicationContext.Database.OpenConnection();
 
-                var number = BloggingContext.ImportBiBXml();
+                var number = PublicationContext.ImportBiBXml();
 
                 Console.WriteLine($"\rTotal : {number} in {before.SinceThen()} s   => {number / before.SinceThen()} / second hiha");
 
-                BloggingContext.PrintItems();
+                PublicationContext.PrintItems();
             }
             Console.WriteLine($"{before.SinceThen()} s   => end select");
         }

@@ -6,7 +6,7 @@ using System;
 
 namespace Data
 {
-    public class BloggingContext : DbContext
+    public class PublicationContext : DbContext
     {
         public string FileName { get; set; } = "out.db";
         public DbSet<Publication> Publications { get; set; }

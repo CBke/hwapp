@@ -49,15 +49,15 @@ namespace Extentions
                 return number;
             }
         }
-        public static void PrintItems(this BloggingContext BloggingContext)
+        public static void PrintItems(this PublicationContext PublicationContext)
         {
 
-            BloggingContext.Database.OpenConnection();
+            PublicationContext.Database.OpenConnection();
 
-            using (var SQLiteConnection = BloggingContext.Database.GetDbConnection() as Microsoft.Data.Sqlite.SqliteConnection)
+            using (var SQLiteConnection = PublicationContext.Database.GetDbConnection() as Microsoft.Data.Sqlite.SqliteConnection)
             using (var Transaction = SQLiteConnection.BeginTransaction())
             {
-                var Publications = BloggingContext
+                var Publications = PublicationContext
                 .Publications
                 .Include(x => x.Authors)
                 .ThenInclude(x => x.Author)
@@ -65,7 +65,7 @@ namespace Extentions
                 .Select(x => x.ToPublicatieFTS())
                 .ToList();
 
-                BloggingContext
+                PublicationContext
                 .ToInsertSqliteCommand(typeof(PublicatieFTS), SQLiteConnection, Transaction)
                 .Run(Publications);
 
